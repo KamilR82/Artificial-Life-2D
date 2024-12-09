@@ -1,6 +1,6 @@
 # Artificial-Life-2D
 ## About
-Artificial-Life-2D is program creates a fullscreen OpenGL window like a screensaver with some nice context.
+Artificial-Life-2D is Win32 program that creates a fullscreen OpenGL window like a screensaver with some nice context.
 
 ## Controls
 Escape - exit application\
