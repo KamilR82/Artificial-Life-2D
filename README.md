@@ -12,3 +12,8 @@ F12 - toggle scene change lock
 
 ## Compile
 g++ -o output.exe main.cpp -mwindows -lopengl32 -Os -s
+
+## Screenshots
+![screenshot](screenshots/1.png)
+![screenshot](screenshots/2.png)
+![screenshot](screenshots/3.png)
