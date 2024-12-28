@@ -10,7 +10,7 @@
 #include <math.h>	 // sin, cos, ...
 #include <time.h>	 // time
 
-#define GL_PI 3.141592654
+#define GL_PI 3.1415926535
 #include <gl\gl.h> //lib opengl32 - OpenGL
 
 HDC hDC = NULL;	  // main window device context
@@ -20,7 +20,7 @@ HGLRC hRC = NULL; // main render device context
 #define TIMER_INDEX_SCENE 2		// next scene timer
 #define TIMER_TIME_FRAME 32		// 1000 / ms = fps
 #define TIMER_TIME_SCENE 300000 // next scene time (5 min)
-#define SCENE_COUNT 12			// number of scenes 0-11
+#define SCENE_COUNT 13			// number of scenes 0-12
 
 const wchar_t lpClassName[] = L"OpenGL_AL2D";
 const wchar_t lpWindowTitle[] = L"Artifical Life 2D";
@@ -134,11 +134,11 @@ static void glSceneUpdate()
 		for (y = 0; y < 200; y++)
 		{
 			glBegin(GL_LINE_STRIP);
-			for (x = 0; x < 199; x++)
+			for (x = 0; x < 200; x++)
 			{
 				// color
 				alpha = 1 / (1 + abs(x - 100));
-				glColor4f(0.99f, 0.98f, 0.88f, alpha);
+				glColor4f(0.92f, 0.92f, 0.92f, alpha);
 				// draw
 				k = x / 8 - 12;
 				e = y / 8 - 9;
@@ -307,6 +307,29 @@ static void glSceneUpdate()
 			glEnd();
 		}
 		break;
+	case 12: // double nudibranch
+		for (y = 0; y < 200; y++)
+		{
+			glBegin(GL_LINE_STRIP);
+			for (x = 0; x < 200; x++)
+			{
+				// color
+				alpha = 1 / (1 + abs(x - 100));
+				glColor4f(0.2f, (float)(abs(moving) / 400) + 0.2f, y / 200, alpha); // glColor4f(0.2f, 0.7f, y / 200, alpha);
+				// draw
+				k = x / 8 - 12;
+				e = y / 13 - 14;
+				o = sqrt(pow(k, 2) + pow(e, 2)) / 2; // magnitude(k, e) / 2;
+				d = 5 * cos(o);
+				q = x / 2 + 10 + 1 / k + k * cos(e) * sin(d * 8 - t);
+				c = d / 3 + t / 8;
+				px = q * sin(c) + sin(d * 2 + t) * k;
+				py = (y / 4 + 5 * o * o + q * cos(c * 3)) / 2 * cos(c);
+				glVertex2d(px, py);
+			}
+			glEnd();
+		}
+		break;
 	default:
 		break;
 	}
@@ -349,11 +372,30 @@ static void glResize(HWND hWnd, int width = 0, int height = 0)
 	glResize(width, height);
 }
 
-static void ToggleFullscreen(HWND hWnd)
+static void ShowMouseCursor(BOOL bShow) // connect mouse reset ShowCursor counter to 0 / disconnect mouse reset ShowCursor counter to -1
 {
-	fullscreen = !fullscreen; // toggle
-	ShowCursor(!fullscreen);
-	if (fullscreen)
+	CURSORINFO ci;
+	ci.cbSize = sizeof(ci);
+	if (GetCursorInfo(&ci))
+	{
+		if (ci.flags == CURSOR_SHOWING) // mouse cursor is showing
+		{
+			if (!bShow) // hide mouse cursor
+				while (ShowCursor(FALSE) > -1)
+					;
+		}
+		else
+		{
+			if (bShow) // show mouse cursor
+				while (ShowCursor(TRUE) < 0)
+					;
+		}
+	}
+}
+
+static void SetFullscreen(HWND hWnd, BOOL bFullscreen)
+{
+	if (bFullscreen)
 	{
 		LONG_PTR style = (LONG_PTR)GetClassLongPtr(hWnd, GCL_STYLE);
 		SetClassLongPtr(hWnd, GCL_STYLE, style | CS_NOCLOSE); // disable Alt+F4
@@ -363,6 +405,7 @@ static void ToggleFullscreen(HWND hWnd)
 		SetWindowLongPtr(hWnd, GWL_EXSTYLE, WS_EX_APPWINDOW | WS_EX_TOPMOST);
 		// SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
 		ShowWindow(hWnd, SW_MAXIMIZE); // send WM_SIZE
+		ShowMouseCursor(FALSE);
 	}
 	else
 	{
@@ -374,6 +417,7 @@ static void ToggleFullscreen(HWND hWnd)
 		SetWindowLongPtr(hWnd, GWL_EXSTYLE, WS_EX_APPWINDOW);
 		// SetWindowPos(hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
 		ShowWindow(hWnd, SW_RESTORE); // send WM_SIZE
+		ShowMouseCursor(TRUE);
 	}
 }
 
@@ -459,17 +503,17 @@ static LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 			scene = rand() % SCENE_COUNT;
 		else if (wParam == VK_F1)
 		{
-			ShowCursor(TRUE);
+			ShowMouseCursor(TRUE);
 			wchar_t message[1000];
 			int i = swprintf_s(message, 1000, L"Current scene: %i of [0..%i]\n", scene, SCENE_COUNT - 1);
 			i += swprintf_s(message + i, 1000 - (size_t)i, L"\nShortcuts:\nEscape - exit application\nSPACE - select random scene\nLeft/Right - select prev or next scene\nUp/Down - speed up or down animation\nF11 - toggle fullscreen\nF12 - toggle scene change lock\n");
 			i += swprintf_s(message + i, 1000 - (size_t)i, L"\nhttps://github.com/KamilR82/Artificial-Life-2D");
 			MessageBox(hWnd, message, lpWindowTitle, MB_OK | MB_ICONINFORMATION);
 			if (fullscreen)
-				ShowCursor(FALSE);
+				ShowMouseCursor(FALSE);
 		}
 		else if (wParam == VK_F11) // toogle fullscreen
-			ToggleFullscreen(hWnd);
+			SetFullscreen(hWnd, fullscreen = !fullscreen);
 		else if (wParam == VK_F12) // toogle scene lock
 		{
 			if (KillTimer(hWnd, TIMER_INDEX_SCENE) == 0)				   // disable scene timer
@@ -501,7 +545,7 @@ static LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 			glSceneUpdate();
 		}
 		else if (wParam == TIMER_INDEX_SCENE)
-			scene = rand() % SCENE_COUNT;
+			scene = rand() % SCENE_COUNT; // random scene
 		break;
 	case WM_SIZE:
 		if (wParam != SIZE_MINIMIZED) // SIZE_RESTORED or SIZE_MAXIMIZED
@@ -549,17 +593,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			}
 			SetForegroundWindow(hWnd);
 		}
-		return 0; // exit
+		return 0; // exit this instance
 	}
 	else											   // first instance
 		hMutex = CreateMutex(NULL, TRUE, lpClassName); // create mutex
 
-	srand((UINT)time(NULL)); // random seed
-	scene = rand() % SCENE_COUNT;
+	srand((UINT)time(NULL));	  // random seed
+	scene = rand() % SCENE_COUNT; // random scene
 
 	WNDCLASSEX wcex = {};
 	wcex.cbSize = sizeof(WNDCLASSEX);
-	wcex.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC | (fullscreen ? CS_NOCLOSE : 0); // CS_NOCLOSE = disable Alt+F4
+	wcex.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC; // CS_NOCLOSE = disable Alt+F4
 	wcex.cbClsExtra = 0;
 	wcex.cbWndExtra = 0;
 	wcex.hInstance = hInstance;
@@ -576,25 +620,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		return -1;
 	}
 
-	HWND hWnd = NULL;
-	if (fullscreen)
-	{
-		hWnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_TOPMOST, lpClassName, lpWindowTitle, WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_MAXIMIZE, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, HWND_DESKTOP, NULL, hInstance, NULL);
-		SetWindowLongPtr(hWnd, GWL_STYLE, WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP | WS_MAXIMIZE); // WS_POPUP must be set AFTER creating window
-	}
-	else
-		hWnd = CreateWindowEx(WS_EX_APPWINDOW, lpClassName, lpWindowTitle, WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, HWND_DESKTOP, NULL, hInstance, NULL);
+	HWND hWnd = CreateWindowEx(WS_EX_APPWINDOW, lpClassName, lpWindowTitle, WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, HWND_DESKTOP, NULL, hInstance, NULL);
 	if (!hWnd)
 	{
 		UnregisterClass(lpClassName, hInstance);
 		ReleaseMutex(hMutex);
 		return -2;
 	}
-	ShowWindow(hWnd, SW_SHOW); // show window
+	SetFullscreen(hWnd, fullscreen);
 	SetForegroundWindow(hWnd); // slightly higher priority
+	ShowWindow(hWnd, SW_SHOW); // show window
 	SetFocus(hWnd);			   // sets keyboard focus to the window
-	if (fullscreen)
-		ShowCursor(FALSE);
 
 	MSG msg;
 	while (GetMessage(&msg, NULL, 0, 0))
@@ -603,7 +639,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		DispatchMessage(&msg);
 	}
 
-	ShowCursor(TRUE);
 	UnregisterClass(lpClassName, hInstance);
 	ReleaseMutex(hMutex);
 	return (int)msg.wParam;
