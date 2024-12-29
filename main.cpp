@@ -20,7 +20,7 @@ HGLRC hRC = NULL; // main render device context
 #define TIMER_INDEX_SCENE 2		// next scene timer
 #define TIMER_TIME_FRAME 32		// 1000 / ms = fps
 #define TIMER_TIME_SCENE 300000 // next scene time (5 min)
-#define SCENE_COUNT 13			// number of scenes 0-12
+#define SCENE_COUNT 14			// number of scenes 0-13
 
 const wchar_t lpClassName[] = L"OpenGL_AL2D";
 const wchar_t lpWindowTitle[] = L"Artifical Life 2D";
@@ -330,6 +330,29 @@ static void glSceneUpdate()
 			glEnd();
 		}
 		break;
+	case 13:
+		for (y = 0; y < 200; y++)
+		{
+			glBegin(GL_LINE_STRIP);
+			for (x = 0; x < 100; x++)
+			{
+				// color
+				alpha = 2 / (1 + abs(x - 50));
+				glColor4f(y / 200, 0.5f, x / 100, alpha);
+				// draw
+				k = x / 4 - 12.5;
+				e = y / 9;
+				o = sqrt(pow(k, 2) + pow(e, 2)) / 9; // magnitude(k, e) / 9;
+				q = x + 99 + cos(9 / k) + o * k * (cos(e * 9) / 3 + cos(y / 9) / .7) * sin(o * 4 - t);
+				c = o * e / 30 - t / 8;
+				px = q * .7 * sin(c);
+				py = y / 9 * cos(c * 4 - t / 2) - q / 2 * cos(c);
+				glVertex2d(px, py);
+			}
+			glEnd();
+		}
+		break;
+
 	default:
 		break;
 	}
