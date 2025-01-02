@@ -330,8 +330,8 @@ static void glSceneUpdate()
 			glEnd();
 		}
 		break;
-	case 13:
-		for (y = 0; y < 200; y++)
+	case 13: //twins
+		for (y = 0; y < 150; y++)
 		{
 			glBegin(GL_LINE_STRIP);
 			for (x = 0; x < 100; x++)
@@ -345,14 +345,31 @@ static void glSceneUpdate()
 				o = sqrt(pow(k, 2) + pow(e, 2)) / 9; // magnitude(k, e) / 9;
 				q = x + 99 + cos(9 / k) + o * k * (cos(e * 9) / 3 + cos(y / 9) / .7) * sin(o * 4 - t);
 				c = o * e / 30 - t / 8;
-				px = q * .7 * sin(c);
+				px = q * .7 * sin(c) + 100;
+				py = y / 9 * cos(c * 4 - t / 2) - q / 2 * cos(c);
+				glVertex2d(px, py);
+			}
+			glEnd();
+
+			glBegin(GL_LINE_STRIP);
+			for (x = 0; x < 100; x++)
+			{
+				// color
+				alpha = 2 / (1 + abs(x - 50));
+				glColor4f(y / 200, 0.5f, x / 100, alpha);
+				// draw
+				k = x / 4 - 12.5;
+				e = y / 9 + 9;
+				o = sqrt(pow(k, 2) + pow(e, 2)) / 9; // magnitude(k, e) / 9;
+				q = x + 99 + tan(1 / k) + o * k * (cos(e * 9) / 2 + cos(y / 9) / .7) * sin(o * 4 - t * 2);
+				c = o * e / 30 - t / 8;
+				px = q * .7 * sin(c) - 100;
 				py = y / 9 * cos(c * 4 - t / 2) - q / 2 * cos(c);
 				glVertex2d(px, py);
 			}
 			glEnd();
 		}
 		break;
-
 	default:
 		break;
 	}
@@ -627,13 +644,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	WNDCLASSEX wcex = {};
 	wcex.cbSize = sizeof(WNDCLASSEX);
 	wcex.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC; // CS_NOCLOSE = disable Alt+F4
-	wcex.cbClsExtra = 0;
-	wcex.cbWndExtra = 0;
 	wcex.hInstance = hInstance;
 	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wcex.hIcon = LoadIcon(NULL, IDI_APPLICATION);	// (HICON)LoadImage(hInstance, MAKEINTRESOURCE(IDI_MAIN), IMAGE_ICON, GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON), LR_SHARED | LR_LOADTRANSPARENT);
-	wcex.hIconSm = LoadIcon(NULL, IDI_APPLICATION); // (HICON)LoadImage(hInstance, MAKEINTRESOURCE(IDI_MAIN), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), LR_SHARED | LR_LOADTRANSPARENT);
-	wcex.lpszMenuName = NULL;						// MAKEINTRESOURCE(IDR_MENU1);
+	wcex.hIcon = LoadIcon(NULL, IDI_APPLICATION);	// (HICON)LoadImage(hInstance, MAKEINTRESOURCE(IDI_MAIN), IMAGE_ICON, GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON), LR_LOADTRANSPARENT);
+	wcex.hIconSm = LoadIcon(NULL, IDI_APPLICATION); // (HICON)LoadImage(hInstance, MAKEINTRESOURCE(IDI_MAIN), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), LR_LOADTRANSPARENT);
 	wcex.hbrBackground = (HBRUSH)COLOR_WINDOW;
 	wcex.lpfnWndProc = (WNDPROC)WindowProcedure;
 	wcex.lpszClassName = lpClassName;
