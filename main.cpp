@@ -20,7 +20,7 @@ HGLRC hRC = NULL; // main render device context
 #define TIMER_INDEX_SCENE 2		// next scene timer
 #define TIMER_TIME_FRAME 32		// 1000 / ms = fps
 #define TIMER_TIME_SCENE 300000 // next scene time (5 min)
-#define SCENE_COUNT 15			// number of scenes 0-14
+#define SCENE_COUNT 16			// number of scenes 0-15
 
 const wchar_t lpClassName[] = L"OpenGL_AL2D";
 const wchar_t lpWindowTitle[] = L"Artifical Life 2D";
@@ -30,9 +30,14 @@ const float viewScale = 100.0f;
 
 BOOL fullscreen = TRUE; // fullscreen or normal window
 int scene = 0;			// actual scene index
-int speed = 90;			// 10-ultra fast, 30-fast, 60-normal, 90-slow, 120-very slow, 180-ultra slow, 600-almost standing
+int speed = 100;		// 10-ultra fast, 30-fast, 60-normal, 90-slow, 120-very slow, 180-ultra slow, 600-almost standing
 
 GLdouble t = GL_PI * 4; // animation time (GL_PI * 4 means center of the screen for beginning of static animation)
+
+inline double magnitude(double k, double e)
+{
+	return sqrt(pow(k, 2) + pow(e, 2));
+}
 
 static void glSceneUpdate()
 {
@@ -59,7 +64,7 @@ static void glSceneUpdate()
 				//  draw
 				k = x / 8 - 12.5;
 				e = y / 8 - 12.5;
-				o = (pow(k, 2) + pow(e, 2)) / 139;
+				o = (pow(k, 2) + pow(e, 2)) / 139; // magnitude(k, e) ^ 2 / 139;
 				d = 9 * cos(o);
 				px = ((x + sin(d) * d * k) / 2 + 150 + o * k * sin(t + d * o)) - 200 + moving;
 				py = -1 * (y / 9 - d * 15 - cos(d * 2) * d + 220 + d * sin(d - t)) + 200;
@@ -80,7 +85,7 @@ static void glSceneUpdate()
 				//  draw
 				k = x / 8 - 12.5;
 				e = y / 8 - 12.5;
-				o = (pow(k, 2) + pow(e, 2)) / 169;
+				o = (pow(k, 2) + pow(e, 2)) / 169; // magnitude(k, e) ^ 2 / 169;
 				d = .5 + 5 * cos(o);
 				px = x + d * k * sin(d * 2 + o + t) + e * cos(e + t) - 100 + moving;
 				py = -1 * (o * 135 - y / 4 - d * 6 * cos(d * 3 + o * 9 + t) + 125) + 200;
@@ -101,7 +106,8 @@ static void glSceneUpdate()
 				//  draw
 				k = x / 8 - 12.5;
 				e = y / 8 - 12.5;
-				d = 5 * cos(sqrt(pow(k, 2) + pow(e, 2)) / 3);
+				o = magnitude(k, e) / 3;
+				d = 5 * cos(o);
 				px = ((x + (d * k + k * 3) * sin(d * 2.5 - t)) / 2) - 50 + moving;
 				py = -1 * (d * 13 + (d * 3 + 12) * (3 + cos(d * 3 - t)) + d * e) + 50;
 				glVertex2d(px, py);
@@ -120,7 +126,7 @@ static void glSceneUpdate()
 				//  draw
 				k = x / 8 - 12.5;
 				e = y / 8 - 9;
-				o = sqrt(pow(k, 2) + pow(e, 2)) / 4;
+				o = magnitude(k, e) / 4;
 				q = x + y + e / k + o * k * cos(y / 3) * sin(o * 2 - t) * o / 2;
 				c = o * e / 40 - t / 8;
 				px = q / 3 * atan(3 * sin(c)) + moving;
@@ -164,7 +170,7 @@ static void glSceneUpdate()
 				// draw
 				k = x / 8 - 25;
 				e = y / 8 - 25;
-				o = sqrt(pow(k, 2) + pow(e, 2)) / 3; // magnitude(k, e) / 3
+				o = magnitude(k, e) / 3;
 				d = 5 * cos(o);
 				px = (x + d * k * sin(d * 2.5 - t) + k / 2 * sin(y / 3 + t)) / 2 - 100 + moving;
 				py = (d * 19 + (d - 2) * 5 * abs(cos(d / 2 - t / 2)) + d * e) + 25;
@@ -185,7 +191,7 @@ static void glSceneUpdate()
 				// draw
 				k = x / 8 - 25;
 				e = y / 8 - 25;
-				o = sqrt(pow(k, 2) + pow(e, 2)) / 4; // magnitude(k, e) / 4
+				o = magnitude(k, e) / 4;
 				q = x + y / 3 + k / cos(y / 8) + 1 / k + o * k * cos(y / 8 - t) * sin(o * 4 - t);
 				c = o * e / 50 - t / 8;
 				px = q / 3 * atan(2 * sin(c));
@@ -207,7 +213,7 @@ static void glSceneUpdate()
 				// draw
 				k = x / 8 - 25;
 				e = y / 8 - 25;
-				o = sqrt(pow(k, 2) + pow(e, 2)) / 3.5; // magnitude(k, e) / 3.5
+				o = magnitude(k, e) / 3.5;
 				d = 5 * cos(o);
 				c = (d + o) / 4 - t / 8;
 				px = (k * atan(3 * cos(d * 9)) + x / 2) * cos(c);
@@ -254,8 +260,8 @@ static void glSceneUpdate()
 				d = (pow(k, 2) + pow(e, 2)) / 99; // magnitude(k, e) ^ 2 / 99;
 				q = x / 2 + k / atan(9 * cos(e)) * sin(d * 4 - t);
 				c = d / 3 - t / 8;
-				px = q * sin(c);
-				py = (y / 3 + d + q) * cos(c);
+				px = (y / 3 + d + q) * cos(c);
+				py = q * sin(c);
 				glVertex2d(px, py);
 			}
 			glEnd();
@@ -273,7 +279,7 @@ static void glSceneUpdate()
 				// draw
 				k = x / 8 - 25;
 				e = y / 8 - 25;
-				o = sqrt(pow(k, 2) + pow(e, 2)) / 3; // magnitude(k, e) / 3;
+				o = magnitude(k, e) / 3;
 				d = cos(o) * e / 5;
 				q = x / 4 + k / cos(y / 9) * sin(d * 9 - t) + 25;
 				c = d - t / 8;
@@ -296,7 +302,7 @@ static void glSceneUpdate()
 				// draw
 				k = x / 8 - 25;
 				e = y / 8 - 25;
-				o = sqrt(pow(k, 2) + pow(e, 2)) / (4 + sin(k * e / 49 - t)); // magnitude(k, e) / 3;
+				o = magnitude(k, e) / (4 + sin(k * e / 49 - t));
 				d = cos(o);
 				q = k / cos(e) * sin(d * 9) + x / 3;
 				c = o - t / 8; // change the minus to plus and it will go the other way around
@@ -319,7 +325,7 @@ static void glSceneUpdate()
 				// draw
 				k = x / 8 - 12;
 				e = y / 13 - 14;
-				o = sqrt(pow(k, 2) + pow(e, 2)) / 2; // magnitude(k, e) / 2;
+				o = magnitude(k, e) / 2;
 				d = 5 * cos(o);
 				q = x / 2 + 10 + 1 / k + k * cos(e) * sin(d * 8 - t);
 				c = d / 3 + t / 8;
@@ -330,7 +336,7 @@ static void glSceneUpdate()
 			glEnd();
 		}
 		break;
-	case 13: //twins
+	case 13: // twins
 		for (y = 0; y < 150; y++)
 		{
 			glBegin(GL_LINE_STRIP);
@@ -342,7 +348,7 @@ static void glSceneUpdate()
 				// draw
 				k = x / 4 - 12.5;
 				e = y / 9;
-				o = sqrt(pow(k, 2) + pow(e, 2)) / 9; // magnitude(k, e) / 9;
+				o = magnitude(k, e) / 9;
 				q = x + 99 + cos(9 / k) + o * k * (cos(e * 9) / 3 + cos(y / 9) / .7) * sin(o * 4 - t);
 				c = o * e / 30 - t / 8;
 				px = q * .7 * sin(c) + 100;
@@ -360,7 +366,7 @@ static void glSceneUpdate()
 				// draw
 				k = x / 4 - 12.5;
 				e = y / 9 + 9;
-				o = sqrt(pow(k, 2) + pow(e, 2)) / 9; // magnitude(k, e) / 9;
+				o = magnitude(k, e) / 9;
 				q = x + 99 + tan(1 / k) + o * k * (cos(e * 9) / 2 + cos(y / 9) / .7) * sin(o * 4 - t * 2);
 				c = o * e / 30 - t / 8;
 				px = q * .7 * sin(c) - 100;
@@ -370,23 +376,42 @@ static void glSceneUpdate()
 			glEnd();
 		}
 		break;
-	case 14:
+	case 14: // splash
 		for (y = 0; y < 200; y++)
 		{
 			glBegin(GL_LINE_STRIP);
 			for (x = 0; x < 200; x++)
 			{
 				// color
-				alpha = 1 / (1 + abs(x - 100)) + 0.02f;
-				glColor4f(y / 200, 0.3f, 0.7f, alpha);
+				glColor4f(y / 200, 0.6f, x / 200, 0.1f);
 				// draw
 				k = x / 8 - 12.5;
 				e = y / 8 - 12.5;
-				o = sqrt(pow(k, 2) + pow(e, 2)) / 12; // magnitude(k, e) / 12;
+				o = magnitude(k, e) / 12;
 				o *= cos(sin(k / 2) * cos(e / 2));
 				d = 5 * cos(o);
-				px = x + d * k * (sin(d * 2 + t) + sin(y * o * o) / 9) - 100;
-				py = y / 3 - d * 40 + 19 * cos(d + t) * 2 + 50;
+				px = x + d * k * (sin(d * 2 + t) + sin(y * o * o) / 8) - 100;
+				py = y / 3 - d * 40 + 19 * cos(d + t) * -3 + 50;
+				glVertex2d(px, py);
+			}
+			glEnd();
+		}
+		break;
+	case 15: // sea flower
+		for (y = 0; y < 200; y++)
+		{
+			glBegin(GL_LINE_STRIP);
+			for (x = 0; x < 200; x++)
+			{
+				// color
+				glColor4f(y / 200, 0.3f, 0.7f, 0.2f);
+				// draw
+				k = x / 8 - 12;
+				e = y / 8 - 12;
+				o = 2 - magnitude(k, e) / 3;
+				d = -5 * abs(sin(k / 2) * cos(e * .8));
+				px = (x - d * k * 4 + d * k * sin(d + t)) * .7 + k * o * 2 - 70;
+				py = (y - d * y / 5 + d * e * cos(d + t + o) * sin(t + d)) * .7 + e * o - 120;
 				glVertex2d(px, py);
 			}
 			glEnd();
