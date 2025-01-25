@@ -20,7 +20,7 @@ HGLRC hRC = NULL; // main render device context
 #define TIMER_INDEX_SCENE 2		// next scene timer
 #define TIMER_TIME_FRAME 32		// 1000 / ms = fps
 #define TIMER_TIME_SCENE 300000 // next scene time (5 min)
-#define SCENE_COUNT 16			// number of scenes 0-15
+#define SCENE_COUNT 18			// number of scenes 0-17
 
 const wchar_t lpClassName[] = L"OpenGL_AL2D";
 const wchar_t lpWindowTitle[] = L"Artifical Life 2D";
@@ -410,8 +410,49 @@ static void glSceneUpdate()
 				e = y / 8 - 12;
 				o = 2 - magnitude(k, e) / 3;
 				d = -5 * abs(sin(k / 2) * cos(e * .8));
-				px = (x - d * k * 4 + d * k * sin(d + t)) * .7 + k * o * 2 - 70;
-				py = (y - d * y / 5 + d * e * cos(d + t + o) * sin(t + d)) * .7 + e * o - 120;
+				px = (x - d * k * 4 + d * k * sin(d + t)) + k * o * 2 - 95;
+				py = (y - d * y / 5 + d * e * cos(d + t + o) * sin(t + d)) + e * o - 190;
+				glVertex2d(px, py);
+			}
+			glEnd();
+		}
+		break;
+	case 16: // storm waves
+		for (y = 0; y < 200; y++)
+		{
+			glBegin(GL_LINE_STRIP);
+			for (x = 0; x < 200; x++)
+			{
+				// color
+				glColor4f(x / 200, y / 200, 0.7f, 0.1f);
+				// draw
+				k = x / 8 - 12.5;
+				e = y / 8 - 12;
+				o = 3 - magnitude(k, e) / 3;
+				d = -4 * (sin(k / 2) * cos(e));
+				px = 3 * (x + e * cos(t) + d * k * sin(d + t)) + k * o - 300;
+				py = (y - d * 19 + d * e * cos(d + t)) - 120;
+				glVertex2d(px, py);
+			}
+			glEnd();
+		}
+		break;
+	case 17: // scurfy
+		for (y = 0; y < 200; y++)
+		{
+			glBegin(GL_LINE_STRIP);
+			for (x = 0; x < 200; x++)
+			{
+				// color
+				alpha = 2 / (1 + abs(x - 100));
+				glColor4f(y / 100, 0.6f, 0.8f, alpha + .06f);
+				// draw
+				k = x / 8 - 12.5;
+				d = abs(cos(k / 2) + sin(y / 4));
+				q = x / 4 + 90 + (d + .1) * k * cos(d - t * 2 + y / 24);
+				c = y / 99 - t / 8 + d * d / 32;
+				px = (q + y) * .7 * sin(c) + (q - y) / 2 * cos(c * 2);
+				py = q * .7 * cos(c);
 				glVertex2d(px, py);
 			}
 			glEnd();
